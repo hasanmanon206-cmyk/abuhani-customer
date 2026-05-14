@@ -13,21 +13,21 @@
         .section h3 { margin-bottom: 10px; color: #333; border-bottom: 2px solid #1a73e8; padding-bottom: 5px; }
         .product { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; cursor: pointer; }
         .product-info { flex: 1; }
-        .product-name { font-weight: bold; }
-        .product-price { color: #666; font-size: 14px; }
-        .product-stock { color: #888; font-size: 12px; }
+        .product-name { font-weight: bold; font-size: 15px; }
+        .product-price { color: #666; font-size: 13px; }
+        .product-stock { color: #888; font-size: 11px; }
         .btn { padding: 8px 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
-        .btn-add { background: #1a73e8; color: white; }
+        .btn-add { background: #1a73e8; color: white; min-width: 70px; }
         .btn-remove { background: #dc3545; color: white; padding: 4px 10px; font-size: 12px; }
         .btn-order { background: #28a745; color: white; width: 100%; padding: 12px; font-size: 16px; }
-        .btn-back { background: #6c757d; color: white; }
+        .btn-back { background: #6c757d; color: white; margin-bottom: 10px; }
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
         .total { font-size: 18px; font-weight: bold; text-align: left; margin-top: 10px; color: #1a73e8; }
         .badge { background: #dc3545; color: white; border-radius: 50%; padding: 2px 8px; font-size: 12px; }
         .hidden { display: none; }
         .shamcash-box { background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 10px; margin: 10px 0; text-align: center; }
-        .shamcash-box .number { font-size: 20px; font-weight: bold; color: #1a73e8; word-break: break-all; }
+        .shamcash-box .number { font-size: 18px; font-weight: bold; color: #1a73e8; word-break: break-all; }
         .contact-box { background: #e8f5e9; border-radius: 8px; padding: 10px; margin: 10px 0; text-align: center; }
         .loading { text-align: center; padding: 10px; color: #1a73e8; }
         #statusMsg { text-align: center; padding: 10px; font-weight: bold; }
@@ -35,7 +35,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- شاشة تسجيل الدخول -->
         <div id="loginScreen" class="section">
             <h2>🛒 أهلاً بك في أبو هاني</h2>
             <p>الرجاء إدخال بياناتك للمتابعة</p>
@@ -48,18 +47,17 @@
             </div>
         </div>
 
-        <!-- شاشة القائمة الرئيسية -->
         <div id="menuScreen" class="hidden">
             <div class="header">
                 <h2>🛒 أبو هاني</h2>
                 <p id="welcomeMsg"></p>
             </div>
-            <div class="section">
+            <div class="section" id="categoriesSection">
                 <h3>📂 الأقسام</h3>
                 <div id="categoriesContainer"></div>
             </div>
             <div class="section hidden" id="productsSection">
-                <h3>📦 المنتجات</h3>
+                <h3 id="productsTitle">📦 المنتجات</h3>
                 <button class="btn btn-back" onclick="showCategories()">⬅ رجوع للأقسام</button>
                 <div id="productsContainer" style="margin-top:10px;"></div>
             </div>
@@ -76,7 +74,7 @@
                     <p class="number">188ade0f2de1a246d1ce69d200567047</p>
                     <p style="font-size:12px; color:#666;">يرجى تحويل المبلغ الإجمالي إلى هذه المحفظة وإرفاق الإيصال أدناه</p>
                 </div>
-                <label>إرفاق صورة الإيصال (صورة أو PDF):</label>
+                <label>إرفاق صورة الإيصال:</label>
                 <input type="file" id="receiptFile" accept="image/*,.pdf" style="padding:5px;">
                 <div id="statusMsg"></div>
                 <button class="btn btn-order" id="submitBtn" onclick="submitOrder()">✅ تأكيد الطلب</button>
@@ -104,18 +102,25 @@
 
         let currentUser = null;
         let cart = [];
-        let allCategories = [];
-        let allProducts = [];
+        let allCategories = {};
+        let allProducts = {};
 
         function loadData() {
+            // تحميل الأقسام
             db.ref('categories').on('value', snap => {
-                allCategories = [];
-                snap.forEach(cat => allCategories.push({ id: cat.key, ...cat.val() }));
-                showCategories();
+                allCategories = {};
+                snap.forEach(cat => {
+                    allCategories[cat.key] = { id: cat.key, ...cat.val() };
+                });
+                displayCategories();
             });
+
+            // تحميل المنتجات
             db.ref('products').on('value', snap => {
-                allProducts = [];
-                snap.forEach(prod => allProducts.push({ id: prod.key, ...prod.val() }));
+                allProducts = {};
+                snap.forEach(prod => {
+                    allProducts[prod.key] = { id: prod.key, ...prod.val() };
+                });
             });
         }
 
@@ -130,26 +135,47 @@
             loadData();
         }
 
-        function showCategories() {
-            document.getElementById('productsSection').classList.add('hidden');
-            document.getElementById('categoriesContainer').classList.remove('hidden');
-            let html = allCategories.length === 0 ? '<p style="color:#888;">لا توجد أقسام حالياً</p>' : '';
-            allCategories.forEach(cat => {
+        function displayCategories() {
+            const container = document.getElementById('categoriesContainer');
+            const categories = Object.values(allCategories);
+            
+            if (categories.length === 0) {
+                container.innerHTML = '<p style="color:#888;">لا توجد أقسام حالياً</p>';
+                return;
+            }
+            
+            let html = '';
+            categories.forEach(cat => {
                 html += `<div class="product" onclick="showProducts('${cat.id}', '${cat.name}')"><div class="product-info"><span class="product-name">📁 ${cat.name}</span></div><span style="color:#1a73e8;">➤</span></div>`;
             });
-            document.getElementById('categoriesContainer').innerHTML = html;
+            container.innerHTML = html;
+        }
+
+        function showCategories() {
+            document.getElementById('categoriesSection').classList.remove('hidden');
+            document.getElementById('productsSection').classList.add('hidden');
         }
 
         function showProducts(categoryId, categoryName) {
-            document.getElementById('categoriesContainer').classList.add('hidden');
+            document.getElementById('categoriesSection').classList.add('hidden');
             document.getElementById('productsSection').classList.remove('hidden');
-            document.getElementById('productsSection').querySelector('h3').textContent = `📦 ${categoryName}`;
-            const products = allProducts.filter(p => p.categoryId === categoryId);
-            let html = products.length === 0 ? '<p style="color:#888;">لا توجد منتجات في هذا القسم حالياً</p>' : '';
+            document.getElementById('productsTitle').textContent = `📦 ${categoryName}`;
+            
+            const container = document.getElementById('productsContainer');
+            const products = Object.values(allProducts).filter(p => String(p.categoryId) === String(categoryId));
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p style="color:#888;">لا توجد منتجات في هذا القسم حالياً</p>';
+                return;
+            }
+            
+            let html = '';
             products.forEach(prod => {
-                html += `<div class="product"><div class="product-info"><span class="product-name">${prod.name}</span><br><span class="product-price">السعر: ${(prod.price || 0).toLocaleString()} ل.س</span><span class="product-stock"> | المخزون: ${prod.stock || 0}</span></div><button class="btn btn-add" onclick="addToCart('${prod.id}', '${prod.name}', ${prod.price || 0}, ${prod.stock || 0})">➕ إضافة</button></div>`;
+                const stock = parseInt(prod.stock) || 0;
+                const price = parseInt(prod.price) || 0;
+                html += `<div class="product"><div class="product-info"><span class="product-name">${prod.name}</span><br><span class="product-price">السعر: ${price.toLocaleString()} ل.س</span><span class="product-stock"> | المخزون: ${stock}</span></div><button class="btn btn-add" onclick="addToCart('${prod.id}', '${prod.name}', ${price}, ${stock})">➕ إضافة</button></div>`;
             });
-            document.getElementById('productsContainer').innerHTML = html;
+            container.innerHTML = html;
         }
 
         function addToCart(id, name, price, stock) {
@@ -192,7 +218,7 @@
             document.getElementById('paymentSection').classList.remove('hidden');
             document.getElementById('statusMsg').innerHTML = '';
             document.getElementById('submitBtn').disabled = false;
-            window.scrollTo(0, document.getElementById('paymentSection').offsetTop);
+            document.getElementById('submitBtn').textContent = '✅ تأكيد الطلب';
         }
 
         function hidePayment() { document.getElementById('paymentSection').classList.add('hidden'); }
@@ -224,10 +250,10 @@
                 statusMsg.innerHTML = '<p style="color:green;">✅ تم إرسال طلبك بنجاح!</p>';
                 alert('✅ تم إرسال طلبك بنجاح!\nرقم الطلب: ' + orderId + '\n\nللتواصل: ' + SHOP_PHONE);
                 cart = []; updateCart(); hidePayment();
-                document.getElementById('receiptFile').value = ''; window.scrollTo(0, 0);
+                document.getElementById('receiptFile').value = '';
             } catch (error) {
                 statusMsg.innerHTML = '<p style="color:red;">❌ حدث خطأ: ' + error.message + '</p>';
-                alert('❌ فشل إرسال الطلب. تأكد من اتصال الإنترنت وحجم الصورة.');
+                alert('❌ فشل إرسال الطلب.');
             } finally {
                 submitBtn.disabled = false; submitBtn.textContent = '✅ تأكيد الطلب';
             }
