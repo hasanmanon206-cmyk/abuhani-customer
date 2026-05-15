@@ -1,116 +1,954 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>طلب أونلاين - مقهى أبو هاني</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo'; }
-        body { background: linear-gradient(145deg, #1a1a2e, #16213e); padding: 20px; color: white; }
-        .header { background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); border-radius: 30px; padding: 15px; margin-bottom: 20px; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 15px; }
-        .product { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 12px; text-align: center; cursor: pointer; transition:0.2s; }
-        .product:active { transform: scale(0.96); }
-        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f0f1a; padding: 12px 20px; display: flex; justify-content: space-between; z-index: 1000; border-top: 2px solid gold; }
-        button { background: #f39c12; border: none; padding: 8px 24px; border-radius: 40px; font-weight: bold; }
-        .drive-btn { background: #2c3e50; color: white; margin-left: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛒 أبو هاني - الطلبات</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root{
+--blue:#1a73e8;
+--green:#28a745;
+--red:#dc3545;
+--gold:#ffc107;
+--dark:#333;
+--glass:rgba(255,255,255,.88);
+--shadow:0 8px 25px rgba(0,0,0,.15);
+--radius:18px;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'Segoe UI',Tahoma,sans-serif;
+background:linear-gradient(
+135deg,
+#ff9a9e 0%,
+#fad0c4 25%,
+#a18cd1 50%,
+#fbc2eb 75%,
+#8fd3f4 100%
+);
+background-size:400% 400%;
+animation:bg 15s ease infinite;
+min-height:100vh;
+padding:15px;
+}
+
+@keyframes bg{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+
+.container{
+max-width:550px;
+margin:auto;
+}
+
+.glass{
+background:var(--glass);
+backdrop-filter:blur(10px);
+-webkit-backdrop-filter:blur(10px);
+border-radius:var(--radius);
+box-shadow:var(--shadow);
+}
+
+.hidden{
+display:none !important;
+}
+
+/* LOGIN */
+
+.login-box{
+padding:25px;
+margin-top:40px;
+}
+
+.logo{
+text-align:center;
+font-size:35px;
+font-weight:bold;
+margin-bottom:10px;
+color:#222;
+}
+
+.sub{
+text-align:center;
+margin-bottom:20px;
+color:#666;
+}
+
+.input{
+width:100%;
+padding:14px;
+border:none;
+outline:none;
+border-radius:12px;
+margin:10px 0;
+font-size:16px;
+background:white;
+}
+
+.btn{
+border:none;
+cursor:pointer;
+border-radius:12px;
+padding:14px;
+font-size:16px;
+font-weight:bold;
+transition:.2s;
+}
+
+.btn:active{
+transform:scale(.97);
+}
+
+.btn-primary{
+background:linear-gradient(45deg,#1a73e8,#6ea8ff);
+color:white;
+width:100%;
+}
+
+.contact-box{
+margin-top:20px;
+background:#e8f5e9;
+padding:15px;
+border-radius:15px;
+text-align:center;
+}
+
+/* HEADER */
+
+.header{
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+.header h2{
+font-size:22px;
+color:#222;
+}
+
+.welcome{
+font-size:13px;
+color:#666;
+margin-top:3px;
+}
+
+.cart-badge{
+background:var(--red);
+color:white;
+width:28px;
+height:28px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:13px;
+font-weight:bold;
+}
+
+/* SECTION */
+
+.section{
+padding:15px;
+margin-bottom:15px;
+}
+
+.section-title{
+font-size:18px;
+margin-bottom:15px;
+color:#222;
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+/* CATEGORY */
+
+.category{
+background:white;
+padding:15px;
+border-radius:14px;
+margin-bottom:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+cursor:pointer;
+transition:.2s;
+}
+
+.category:hover{
+transform:translateY(-2px);
+}
+
+.category i{
+color:var(--blue);
+}
+
+/* PRODUCT */
+
+.product{
+background:white;
+padding:12px;
+border-radius:14px;
+margin-bottom:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+
+.product-info{
+flex:1;
+}
+
+.product-name{
+font-weight:bold;
+font-size:16px;
+}
+
+.product-price{
+color:var(--blue);
+margin-top:5px;
+font-size:14px;
+}
+
+.product-stock{
+font-size:12px;
+color:#777;
+margin-top:4px;
+}
+
+.btn-add{
+background:var(--blue);
+color:white;
+padding:10px 14px;
+font-size:14px;
+}
+
+/* CART */
+
+.cart-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:10px 0;
+border-bottom:1px solid #eee;
+}
+
+.cart-total{
+font-size:20px;
+font-weight:bold;
+color:var(--blue);
+margin-top:15px;
+text-align:center;
+}
+
+.btn-remove{
+background:var(--red);
+color:white;
+padding:6px 10px;
+font-size:12px;
+}
+
+.btn-order{
+background:var(--green);
+color:white;
+width:100%;
+margin-top:15px;
+}
+
+/* PAYMENT */
+
+.pay-box{
+background:#fff3cd;
+border:2px solid var(--gold);
+padding:15px;
+border-radius:15px;
+text-align:center;
+margin-top:10px;
+}
+
+.qr{
+width:220px;
+height:220px;
+display:block;
+margin:15px auto;
+background:white;
+padding:10px;
+border-radius:15px;
+}
+
+.wallet{
+font-weight:bold;
+font-size:18px;
+color:var(--blue);
+word-break:break-all;
+}
+
+.file-input{
+width:100%;
+margin-top:10px;
+background:white;
+padding:10px;
+border-radius:10px;
+}
+
+.status{
+text-align:center;
+margin-top:10px;
+font-weight:bold;
+}
+
+.footer{
+text-align:center;
+padding:20px;
+font-size:13px;
+color:#444;
+}
+
+/* MOBILE */
+
+@media(max-width:500px){
+
+body{
+padding:10px;
+}
+
+.product{
+flex-direction:column;
+align-items:flex-start;
+}
+
+.btn-add{
+width:100%;
+}
+
+.qr{
+width:180px;
+height:180px;
+}
+
+}
+</style>
 </head>
+
 <body>
-<div class="header">
-    <h2><i class="fas fa-store"></i> مقهى وسوبر ماركت أبو هاني</h2>
-    <p>اختر منتجك، أضفه للسلة، ثم أتم الدفع</p>
-    <button id="driveThruModeBtn" class="drive-btn"><i class="fas fa-car"></i> وضع الدليفري (للموظفين)</button>
-</div>
-<div id="productsGrid" class="grid">جاري التحميل...</div>
 
-<div id="cartBar" class="cart-bar" style="display: none;">
-    <span><i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span> عناصر</span>
-    <span><span id="cartTotal">0</span> ل.س</span>
-    <button id="checkoutBtn"><i class="fas fa-credit-card"></i> إتمام الطلب</button>
+<div class="container">
+
+<!-- LOGIN -->
+
+<div id="loginScreen" class="glass login-box">
+
+<div class="logo">
+🛒 أبو هاني
 </div>
 
-<script type="module">
-    import { db } from './firebase-config.js';
-    import { ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    
-    let products = [];
-    let cart = JSON.parse(localStorage.getItem('customerCart')) || [];
-    let isDriveThruMode = false;  // تحويل للجارسون
-    
-    function renderProducts() {
-        const container = document.getElementById('productsGrid');
-        if(!products.length) { container.innerHTML = '<p>لا توجد منتجات</p>'; return; }
-        container.innerHTML = products.map(p => `
-            <div class="product" data-id="${p.id}">
-                <i class="fas fa-mug-hot" style="font-size:2rem"></i>
-                <div>${p.name}</div>
-                <div style="color:gold">${p.price} ل.س</div>
-            </div>
-        `).join('');
-        document.querySelectorAll('.product').forEach(el => {
-            el.addEventListener('click', () => {
-                const id = el.dataset.id;
-                const product = products.find(p=>p.id==id);
-                addToCart(product);
-            });
-        });
-    }
-    
-    function addToCart(product) {
-        const existing = cart.find(i=>i.id==product.id);
-        if(existing) existing.qty++;
-        else cart.push({...product, qty:1});
-        localStorage.setItem('customerCart', JSON.stringify(cart));
-        updateCartUI();
-        Swal.fire({ icon:'success', title:'تمت الإضافة', text:`${product.name}`, timer:800, showConfirmButton:false });
-    }
-    
-    function updateCartUI() {
-        const total = cart.reduce((a,b)=>a+(b.price*b.qty),0);
-        const count = cart.reduce((a,b)=>a+b.qty,0);
-        document.getElementById('cartCount').innerText = count;
-        document.getElementById('cartTotal').innerText = total;
-        document.getElementById('cartBar').style.display = count ? 'flex' : 'none';
-    }
-    
-    document.getElementById('checkoutBtn').addEventListener('click', async () => {
-        if(!cart.length) return;
-        const total = cart.reduce((a,b)=>a+(b.price*b.qty),0);
-        const { value: customerName } = await Swal.fire({ title: 'اسمك (للاستلام)', input: 'text', inputPlaceholder: 'أدخل اسمك' });
-        const source = isDriveThruMode ? 'drive_thru' : 'online';
-        const orderRef = push(ref(db, 'orders'));
-        await set(orderRef, {
-            items: cart,
-            total: total,
-            status: 'pending_payment',
-            source: source,
-            paymentMethod: 'sham_cash',
-            customerName: customerName || 'زائر',
-            timestamp: Date.now(),
-            createdBy: isDriveThruMode ? 'waiter' : 'customer'
-        });
-        localStorage.removeItem('customerCart');
-        cart = [];
-        updateCartUI();
-        Swal.fire('تم إرسال الطلب', 'يرجى دفع المبلغ عبر شام كاش وإرفاق الإيصال بالنظام.', 'success');
-    });
-    
-    document.getElementById('driveThruModeBtn').addEventListener('click', () => {
-        isDriveThruMode = !isDriveThruMode;
-        document.getElementById('driveThruModeBtn').style.background = isDriveThruMode ? '#e67e22' : '#2c3e50';
-        Swal.fire(isDriveThruMode ? 'وضع الدليفري مفعل' : 'وضع العميل العادي', isDriveThruMode ? 'الآن أنت تعمل كجارسون (دليفري)' : 'الآن أنت تطلب كزبون عادي', 'info');
-    });
-    
-    // تحميل المنتجات
-    onValue(ref(db,'products'), (snap) => {
-        if(snap.exists()) {
-            products = Object.entries(snap.val()).map(([id,val])=>({id,...val}));
-            renderProducts();
-        }
-    });
-    updateCartUI();
+<div class="sub">
+أهلاً بك في نظام الطلبات
+</div>
+
+<input
+type="text"
+id="customerName"
+class="input"
+placeholder="👤 الاسم الكامل">
+
+<input
+type="tel"
+id="customerPhone"
+class="input"
+placeholder="📞 رقم الهاتف">
+
+<button class="btn btn-primary" onclick="login()">
+🚀 دخول
+</button>
+
+<div class="contact-box">
+📞 للتواصل والاستفسار
+<br><br>
+<strong>+963 932 293 515</strong>
+</div>
+
+</div>
+
+<!-- APP -->
+
+<div id="appScreen" class="hidden">
+
+<!-- HEADER -->
+
+<div class="glass header">
+
+<div>
+<h2>🛒 أبو هاني</h2>
+<div id="welcomeText" class="welcome"></div>
+</div>
+
+<div class="cart-badge" id="cartBadge">
+0
+</div>
+
+</div>
+
+<!-- CATEGORIES -->
+
+<div class="glass section" id="categoriesSection">
+
+<div class="section-title">
+📂 الأقسام
+</div>
+
+<div id="categoriesContainer"></div>
+
+</div>
+
+<!-- PRODUCTS -->
+
+<div class="glass section hidden" id="productsSection">
+
+<div class="section-title" id="productsTitle">
+📦 المنتجات
+</div>
+
+<button
+class="btn"
+style="background:#666;color:white;width:100%;margin-bottom:15px"
+onclick="backToCategories()">
+⬅ رجوع للأقسام
+</button>
+
+<div id="productsContainer"></div>
+
+</div>
+
+<!-- CART -->
+
+<div class="glass section">
+
+<div class="section-title">
+🛒 السلة
+</div>
+
+<div id="cartContainer">
+<p style="text-align:center;color:#777">
+السلة فارغة
+</p>
+</div>
+
+<div id="cartTotal" class="cart-total hidden">
+0
+</div>
+
+<button
+id="checkoutBtn"
+class="btn btn-order hidden"
+onclick="showPayment()">
+💳 متابعة للدفع
+</button>
+
+</div>
+
+<!-- PAYMENT -->
+
+<div id="paymentSection" class="glass section hidden">
+
+<div class="section-title">
+💳 الدفع عبر شام كاش
+</div>
+
+<div class="pay-box">
+
+<p>
+📱 امسح الباركود للتحويل
+</p>
+
+<img
+class="qr"
+src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=188ade0f2de1a246d1ce69d200567047">
+
+<p style="margin-top:10px">
+رقم المحفظة:
+</p>
+
+<div class="wallet">
+188ade0f2de1a246d1ce69d200567047
+</div>
+
+</div>
+
+<p style="margin-top:15px;text-align:center;color:#444">
+⚠️ بعد التحويل قم برفع صورة الإيصال
+</p>
+
+<input
+type="file"
+id="receiptFile"
+class="file-input"
+accept="image/*,.pdf">
+
+<div id="statusMsg" class="status"></div>
+
+<button
+id="submitBtn"
+class="btn btn-order"
+onclick="submitOrder()">
+
+✅ تأكيد الطلب
+
+</button>
+
+<button
+class="btn"
+style="background:#777;color:white;width:100%;margin-top:10px"
+onclick="hidePayment()">
+
+⬅ رجوع
+
+</button>
+
+<div class="contact-box">
+📞 +963 932 293 515
+</div>
+
+</div>
+
+<div class="footer">
+© تم تطوير وإنشاء هذا التطبيق بواسطة أبو هاني
+</div>
+
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<script>
+
+/* FIREBASE */
+
+firebase.initializeApp({
+databaseURL:"https://abuhaniapp-default-rtdb.asia-southeast1.firebasedatabase.app/"
+});
+
+const db=firebase.database();
+
+/* SETTINGS */
+
+const SHOP_PHONE="+963932293515";
+const SHAM_WALLET="188ade0f2de1a246d1ce69d200567047";
+const IMGBB_API_KEY="3ed557aff721271eac7bd85b93802087";
+
+/* DATA */
+
+let currentUser=null;
+let categories={};
+let products={};
+let cart=[];
+
+/* HELPERS */
+
+function $(id){
+return document.getElementById(id);
+}
+
+/* LOGIN */
+
+function login(){
+
+const name=$('customerName').value.trim();
+const phone=$('customerPhone').value.trim();
+
+if(!name || !phone){
+
+alert('الرجاء إدخال الاسم ورقم الهاتف');
+return;
+
+}
+
+currentUser={name,phone};
+
+$('welcomeText').innerHTML=`مرحباً ${name} 👋`;
+
+$('loginScreen').classList.add('hidden');
+$('appScreen').classList.remove('hidden');
+
+loadData();
+
+}
+
+/* LOAD DATA */
+
+function loadData(){
+
+db.ref('categories').on('value',snap=>{
+
+categories={};
+
+snap.forEach(c=>{
+
+categories[c.key]={
+id:c.key,
+...c.val()
+};
+
+});
+
+renderCategories();
+
+});
+
+db.ref('products').on('value',snap=>{
+
+products={};
+
+snap.forEach(p=>{
+
+products[p.key]={
+id:p.key,
+...p.val()
+};
+
+});
+
+});
+
+}
+
+/* CATEGORIES */
+
+function renderCategories(){
+
+let html='';
+
+Object.values(categories).forEach(cat=>{
+
+html+=`
+<div class="category" onclick="openCategory('${cat.id}','${cat.name}')">
+
+<div>
+📁 ${cat.name}
+</div>
+
+<i class="fas fa-chevron-left"></i>
+
+</div>
+`;
+
+});
+
+$('categoriesContainer').innerHTML=
+html || '<p>لا توجد أقسام</p>';
+
+}
+
+/* OPEN CATEGORY */
+
+function openCategory(id,name){
+
+$('categoriesSection').classList.add('hidden');
+$('productsSection').classList.remove('hidden');
+
+$('productsTitle').innerHTML=`📦 ${name}`;
+
+const filtered=Object.values(products)
+.filter(p=>String(p.categoryId)===String(id));
+
+let html='';
+
+filtered.forEach(p=>{
+
+html+=`
+<div class="product">
+
+<div class="product-info">
+
+<div class="product-name">
+${p.name}
+</div>
+
+<div class="product-price">
+💰 ${(p.price||0).toLocaleString()} ل.س
+</div>
+
+<div class="product-stock">
+📦 المخزون: ${p.stock||0}
+</div>
+
+</div>
+
+<button
+class="btn btn-add"
+onclick="addToCart(
+'${p.id}',
+'${p.name}',
+${p.price||0},
+${p.stock||0}
+)">
+➕ إضافة
+</button>
+
+</div>
+`;
+
+});
+
+$('productsContainer').innerHTML=
+html || '<p>لا توجد منتجات</p>';
+
+}
+
+/* BACK */
+
+function backToCategories(){
+
+$('categoriesSection').classList.remove('hidden');
+$('productsSection').classList.add('hidden');
+
+}
+
+/* CART */
+
+function addToCart(id,name,price,stock){
+
+if(stock<=0){
+
+alert('المنتج غير متوفر');
+return;
+
+}
+
+const existing=cart.find(i=>i.id===id);
+
+if(existing){
+
+existing.qty++;
+
+}else{
+
+cart.push({
+id,
+name,
+price,
+qty:1
+});
+
+}
+
+updateCart();
+
+}
+
+function removeFromCart(id){
+
+cart=cart.filter(i=>i.id!==id);
+
+updateCart();
+
+}
+
+function updateCart(){
+
+$('cartBadge').textContent=
+cart.reduce((s,i)=>s+i.qty,0);
+
+if(cart.length===0){
+
+$('cartContainer').innerHTML=
+'<p style="text-align:center;color:#777">السلة فارغة</p>';
+
+$('cartTotal').classList.add('hidden');
+$('checkoutBtn').classList.add('hidden');
+
+return;
+
+}
+
+let html='';
+let total=0;
+
+cart.forEach(item=>{
+
+const itemTotal=item.price*item.qty;
+
+total+=itemTotal;
+
+html+=`
+<div class="cart-item">
+
+<div>
+${item.name} × ${item.qty}
+<br>
+<strong>
+${itemTotal.toLocaleString()} ل.س
+</strong>
+</div>
+
+<button
+class="btn btn-remove"
+onclick="removeFromCart('${item.id}')">
+
+❌
+
+</button>
+
+</div>
+`;
+
+});
+
+$('cartContainer').innerHTML=html;
+
+$('cartTotal').innerHTML=
+`الإجمالي: ${total.toLocaleString()} ل.س`;
+
+$('cartTotal').classList.remove('hidden');
+$('checkoutBtn').classList.remove('hidden');
+
+}
+
+/* PAYMENT */
+
+function showPayment(){
+
+if(cart.length===0){
+
+alert('السلة فارغة');
+return;
+
+}
+
+$('paymentSection').classList.remove('hidden');
+
+}
+
+function hidePayment(){
+
+$('paymentSection').classList.add('hidden');
+
+}
+
+/* SUBMIT ORDER */
+
+async function submitOrder(){
+
+const file=$('receiptFile').files[0];
+
+if(!file){
+
+alert('قم بإرفاق صورة الإيصال');
+return;
+
+}
+
+const btn=$('submitBtn');
+const status=$('statusMsg');
+
+btn.disabled=true;
+btn.innerHTML='⏳ جاري الإرسال...';
+
+status.innerHTML='⏳ جاري رفع الإيصال...';
+
+try{
+
+const formData=new FormData();
+
+formData.append('image',file);
+
+const response=await fetch(
+`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+{
+method:'POST',
+body:formData
+}
+);
+
+const data=await response.json();
+
+if(!data.success){
+
+throw new Error('فشل رفع الصورة');
+
+}
+
+status.innerHTML='⏳ جاري حفظ الطلب...';
+
+const total=cart.reduce(
+(sum,item)=>sum+(item.price*item.qty),
+0
+);
+
+const orderId='ORD'+Date.now();
+
+const order={
+
+orderId,
+
+customer:currentUser,
+
+items:cart,
+
+total,
+
+receiptImage:data.data.url,
+
+wallet:SHAM_WALLET,
+
+status:'new',
+
+createdAt:Date.now(),
+
+date:new Date().toLocaleString('ar-SY')
+
+};
+
+await db.ref('orders/'+orderId).set(order);
+
+status.innerHTML='✅ تم إرسال الطلب بنجاح';
+
+alert(
+'✅ تم إرسال طلبك بنجاح\n\nرقم الطلب: '+orderId
+);
+
+cart=[];
+
+updateCart();
+
+hidePayment();
+
+$('receiptFile').value='';
+
+}catch(err){
+
+console.error(err);
+
+status.innerHTML='❌ فشل إرسال الطلب';
+
+alert('حدث خطأ أثناء إرسال الطلب');
+
+}finally{
+
+btn.disabled=false;
+btn.innerHTML='✅ تأكيد الطلب';
+
+}
+
+}
+
 </script>
+
 </body>
 </html>
