@@ -2,212 +2,115 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>طلب أونلاين - مقهى أبو هاني</title>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // استيراد Firebase (سنضعها في ملف منفصل بعد قليل، لكن هنا للاختبار المباشر)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        
-        // TODO: ضع config الخاص بك هنا
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        window.db = db; // لجعله عاماً للاستخدام
-
-        // باقي الكود سيكتمل...
-    </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        .product-item {
-            background: rgba(0,0,0,0.4);
-            border-radius: 16px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .product-item:active { transform: scale(0.96); }
-        .product-name { color: white; font-weight: bold; margin: 8px 0; }
-        .product-price { color: #ffd966; font-size: 1.2rem; }
-        .cart-summary {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(20px);
-            padding: 15px;
-            border-top: 1px solid gold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-        }
-        .btn-cart { background: #f39c12; border: none; padding: 12px 24px; border-radius: 40px; font-weight: bold; color: #000; }
-        h1, h2 { color: white; text-align: center; margin: 10px 0; }
-        i { margin-left: 8px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo'; }
+        body { background: linear-gradient(145deg, #1a1a2e, #16213e); padding: 20px; color: white; }
+        .header { background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); border-radius: 30px; padding: 15px; margin-bottom: 20px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 15px; }
+        .product { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 12px; text-align: center; cursor: pointer; transition:0.2s; }
+        .product:active { transform: scale(0.96); }
+        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f0f1a; padding: 12px 20px; display: flex; justify-content: space-between; z-index: 1000; border-top: 2px solid gold; }
+        button { background: #f39c12; border: none; padding: 8px 24px; border-radius: 40px; font-weight: bold; }
+        .drive-btn { background: #2c3e50; color: white; margin-left: 10px; }
     </style>
 </head>
 <body>
-    <div class="glass-card">
-        <h1><i class="fas fa-mug-hot"></i> مقهى أبو هاني</h1>
-        <p style="color:#ccc; text-align:center;">اختر منتجك وأضفه للسلة</p>
-    </div>
+<div class="header">
+    <h2><i class="fas fa-store"></i> مقهى وسوبر ماركت أبو هاني</h2>
+    <p>اختر منتجك، أضفه للسلة، ثم أتم الدفع</p>
+    <button id="driveThruModeBtn" class="drive-btn"><i class="fas fa-car"></i> وضع الدليفري (للموظفين)</button>
+</div>
+<div id="productsGrid" class="grid">جاري التحميل...</div>
+
+<div id="cartBar" class="cart-bar" style="display: none;">
+    <span><i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span> عناصر</span>
+    <span><span id="cartTotal">0</span> ل.س</span>
+    <button id="checkoutBtn"><i class="fas fa-credit-card"></i> إتمام الطلب</button>
+</div>
+
+<script type="module">
+    import { db } from './firebase-config.js';
+    import { ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     
-    <div class="glass-card">
-        <h2><i class="fas fa-utensils"></i> المشروبات والمنتجات</h2>
-        <div id="productsContainer" class="products-grid">جار التحميل...</div>
-    </div>
-
-    <div class="cart-summary" id="cartSummary" style="display: none;">
-        <span style="color:white;"><i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span> منتجات</span>
-        <span style="color:#ffd966;"><span id="cartTotal">0</span> ل.س</span>
-        <button class="btn-cart" id="viewCartBtn"><i class="fas fa-credit-card"></i> إتمام الطلب</button>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        
-        const firebaseConfig = {
-            // 🔴 انسخ بيانات مشروعك هنا 🔴
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        let products = [];
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-        function renderProducts() {
-            const container = document.getElementById('productsContainer');
-            if(!products.length) { container.innerHTML = '<p style="color:white">لا توجد منتجات</p>'; return; }
-            container.innerHTML = products.map(p => `
-                <div class="product-item" data-id="${p.id}">
-                    <i class="fas fa-cup" style="font-size:2rem; color:#f1c40f"></i>
-                    <div class="product-name">${p.name}</div>
-                    <div class="product-price">${p.price} ل.س</div>
-                </div>
-            `).join('');
-            document.querySelectorAll('.product-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.id;
-                    const product = products.find(p => p.id == id);
-                    addToCart(product);
-                });
-            });
-        }
-
-        function addToCart(product) {
-            const existing = cart.find(i => i.id == product.id);
-            if(existing) existing.quantity++;
-            else cart.push({ ...product, quantity: 1 });
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartUI();
-            Swal.fire({ icon: 'success', title: 'تمت الإضافة', text: `${product.name} أضيف للسلة`, timer: 1000, showConfirmButton: false });
-        }
-
-        function updateCartUI() {
-            const count = cart.reduce((a,b)=>a+b.quantity,0);
-            const total = cart.reduce((a,b)=>a+(b.price*b.quantity),0);
-            document.getElementById('cartCount').innerText = count;
-            document.getElementById('cartTotal').innerText = total;
-            document.getElementById('cartSummary').style.display = count ? 'flex' : 'none';
-        }
-
-        document.getElementById('viewCartBtn').addEventListener('click', () => {
-            if(!cart.length) return;
-            let itemsList = cart.map(i => `${i.name} x${i.quantity} = ${i.price*i.quantity} ل.س`).join('\n');
-            Swal.fire({
-                title: 'سلة الطلبات',
-                html: `<pre style="text-align:right">${itemsList}</pre><strong>الإجمالي: ${cart.reduce((a,b)=>a+(b.price*b.quantity),0)} ل.س</strong><br/><br/>
-                       <input id="customerName" placeholder="اسمك (اختياري)" class="swal2-input">`,
-                showCancelButton: true,
-                confirmButtonText: 'الدفع عبر شام كاش',
-                preConfirm: () => {
-                    const name = document.getElementById('customerName').value;
-                    return { name };
-                }
-            }).then(async (result) => {
-                if(result.isConfirmed) {
-                    // حفظ الطلب في Firebase
-                    const orderRef = push(ref(db, 'orders'));
-                    await set(orderRef, {
-                        customerName: result.value.name || 'زبون أونلاين',
-                        items: cart,
-                        total: cart.reduce((a,b)=>a+(b.price*b.quantity),0),
-                        status: 'pending_payment',
-                        source: 'online',
-                        paymentMethod: 'sham_cash',
-                        timestamp: Date.now(),
-                        receiptUrl: ''
-                    });
-                    localStorage.removeItem('cart');
-                    cart = [];
-                    updateCartUI();
-                    Swal.fire('تم', 'تم إرسال طلبك، يرجى الدفع عبر شام كاش وإرفاق الإيصال عبر الرابط القادم', 'info');
-                    // هنا يمكن توجيهه لصفحة رفع الإيصال
-                }
+    let products = [];
+    let cart = JSON.parse(localStorage.getItem('customerCart')) || [];
+    let isDriveThruMode = false;  // تحويل للجارسون
+    
+    function renderProducts() {
+        const container = document.getElementById('productsGrid');
+        if(!products.length) { container.innerHTML = '<p>لا توجد منتجات</p>'; return; }
+        container.innerHTML = products.map(p => `
+            <div class="product" data-id="${p.id}">
+                <i class="fas fa-mug-hot" style="font-size:2rem"></i>
+                <div>${p.name}</div>
+                <div style="color:gold">${p.price} ل.س</div>
+            </div>
+        `).join('');
+        document.querySelectorAll('.product').forEach(el => {
+            el.addEventListener('click', () => {
+                const id = el.dataset.id;
+                const product = products.find(p=>p.id==id);
+                addToCart(product);
             });
         });
-
-        // تحميل المنتجات
-        const productsRef = ref(db, 'products');
-        onValue(productsRef, (snapshot) => {
-            const data = snapshot.val();
-            if(data) {
-                products = Object.entries(data).map(([id, val]) => ({ id, ...val }));
-                renderProducts();
-            } else {
-                // بيانات تجريبية
-                const demo = { p1:{name:'كابتشينو',price:5000}, p2:{name:'لاتيه',price:5500}, p3:{name:'شوكولاتة ساخنة',price:6000} };
-                set(productsRef, demo);
-            }
-        });
-
+    }
+    
+    function addToCart(product) {
+        const existing = cart.find(i=>i.id==product.id);
+        if(existing) existing.qty++;
+        else cart.push({...product, qty:1});
+        localStorage.setItem('customerCart', JSON.stringify(cart));
         updateCartUI();
-    </script>
+        Swal.fire({ icon:'success', title:'تمت الإضافة', text:`${product.name}`, timer:800, showConfirmButton:false });
+    }
+    
+    function updateCartUI() {
+        const total = cart.reduce((a,b)=>a+(b.price*b.qty),0);
+        const count = cart.reduce((a,b)=>a+b.qty,0);
+        document.getElementById('cartCount').innerText = count;
+        document.getElementById('cartTotal').innerText = total;
+        document.getElementById('cartBar').style.display = count ? 'flex' : 'none';
+    }
+    
+    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+        if(!cart.length) return;
+        const total = cart.reduce((a,b)=>a+(b.price*b.qty),0);
+        const { value: customerName } = await Swal.fire({ title: 'اسمك (للاستلام)', input: 'text', inputPlaceholder: 'أدخل اسمك' });
+        const source = isDriveThruMode ? 'drive_thru' : 'online';
+        const orderRef = push(ref(db, 'orders'));
+        await set(orderRef, {
+            items: cart,
+            total: total,
+            status: 'pending_payment',
+            source: source,
+            paymentMethod: 'sham_cash',
+            customerName: customerName || 'زائر',
+            timestamp: Date.now(),
+            createdBy: isDriveThruMode ? 'waiter' : 'customer'
+        });
+        localStorage.removeItem('customerCart');
+        cart = [];
+        updateCartUI();
+        Swal.fire('تم إرسال الطلب', 'يرجى دفع المبلغ عبر شام كاش وإرفاق الإيصال بالنظام.', 'success');
+    });
+    
+    document.getElementById('driveThruModeBtn').addEventListener('click', () => {
+        isDriveThruMode = !isDriveThruMode;
+        document.getElementById('driveThruModeBtn').style.background = isDriveThruMode ? '#e67e22' : '#2c3e50';
+        Swal.fire(isDriveThruMode ? 'وضع الدليفري مفعل' : 'وضع العميل العادي', isDriveThruMode ? 'الآن أنت تعمل كجارسون (دليفري)' : 'الآن أنت تطلب كزبون عادي', 'info');
+    });
+    
+    // تحميل المنتجات
+    onValue(ref(db,'products'), (snap) => {
+        if(snap.exists()) {
+            products = Object.entries(snap.val()).map(([id,val])=>({id,...val}));
+            renderProducts();
+        }
+    });
+    updateCartUI();
+</script>
 </body>
 </html>
